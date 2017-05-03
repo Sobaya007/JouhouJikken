@@ -105,6 +105,10 @@ text centered, rounded corners, minimum height=3em]
   \end{tabular}
 \end{table}
 
+\subsubsection{EX3命令セットで改良すべき点}
+桁あふれしたときにEレジスタの中身を変えてくれるようなINC命令が欲しいと感じた。
+それを別の形で実現しようと考え、1をADDする方法も考えたが、即値が扱えないためそれをするのにも手間がかかる。Eレジスタの中身を変えるINCがなくても、即値を扱える機構さえあれば良いと思う。
+
 \section*{剰余算}
 \subsection*{柿沼}
 \subsubsection*{流れについての説明}
@@ -166,6 +170,9 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
   \end{tabular}
 \end{table}
 
+\subsubsection{EX3命令セットで改良すべき点}
+EX3の命令セットでは、スキップ命令が直感に反するものが多いと感じたため、スキップ条件が逆の命令セットがあると書きやすくなると思う。
+
 \section*{16進 $\rightarrow$ 10進}
 \subsection*{柿沼}
 \subsubsection*{流れについての説明}
@@ -202,6 +209,7 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
 
 16進数文字列として格納されたINPUTを数値としてXに格納し、1桁ずつOUTPUTに入れていく。
 Xへの格納に不備が発生した場合にはERRORをOUTPUTにコピーする。
+なお、このプログラムでは出力文字列は逆順に格納される。
 
 以下にフローチャートを示す。 \\
 
@@ -257,6 +265,7 @@ Xへの格納に不備が発生した場合にはERRORをOUTPUTにコピーす�
 \end{tikzpicture}
 
 \subsubsection{工夫点}
+特になし
 
 \subsubsection{ソースコードと総命令数}
 \lstinputlisting[caption=report1\_3.asm]{./report1_3.asm}
@@ -272,6 +281,9 @@ Xへの格納に不備が発生した場合にはERRORをOUTPUTにコピーす�
     $ABCX$ & 157 \\ \hline
   \end{tabular}
 \end{table}
+
+\subsubsection{EX3命令セットで改良すべき点}
+INCの逆で、-1を足す命令が欲しいと感じた。
 
 \section*{素数計算}
 \subsection*{柿沼}
@@ -352,6 +364,10 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
     $65535$ & 245377052 \\ \hline
   \end{tabular}
 \end{table}
+
+\subsubsection{EX3命令セットで改良すべき点}
+可変長のデータを保持する機能がないので、何か方法が欲しいと思った。
+スタックなどがあればよいが、簡単さを重視した命令セットでは難しいのかもしれない。
 
 \chapter*{サンプルプログラム解析レポート(5)}
 \section{test\_calc1.asm}
