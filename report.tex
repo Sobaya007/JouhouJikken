@@ -59,7 +59,7 @@ Yを右シフトしながらXを左シフトしていき、Yの末尾が1だっ�
 \tikzstyle{block} = [rectangle, draw, fill=blue!20,
 text centered, rounded corners, minimum height=3em]
 \tikzstyle{line} = [draw, -latex']
-\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm, text centered,
     minimum height=2em]
 \tikzstyle{cloud2} = [draw, ellipse,fill=green!20, node distance=3cm,
     minimum height=2em]
@@ -380,7 +380,7 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
 \scalebox{0.8}[0.8]{
 \begin{tikzpicture}[node distance = 2.5cm, auto]
     \coordinate [](entry);
-    \node [block, below of=entry](init){initialize and enable input port};
+    \node [block, below of=entry, text width=150](init){各種変数初期化 \\ IMSK = 1000 \\ IOT = 1};
     \node [if, below of=init](breakIf){BYE=0?};
     \node [cloud, right of=breakIf](hlt){HLT};
     % Draw edges
@@ -391,22 +391,22 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
     \end {tikzpicture}
   }
 
-\scalebox{0.8}[0.8]{
+\scalebox{0.6}[0.6]{
 \begin{tikzpicture}[node distance = 2.5cm, auto]
     % Place nodes
     \coordinate [below of=breakIf](entry2);
     \node [block, below of=entry2](start){AC,Eを退避};
     \node [if, below of=start](isOutStt){OUT\_STT $\geq$ 1?};
-    \node [if, below of=isOutStt](canInput){入力を受け取ることが可能か?};
-    \node [block, below of=canInput](input){入力を遮断し、取得};
+    \node [if, below of=isOutStt](canInput){FGI == 0?};
+    \node [block, below of=canInput](input){入力を取得};
     \node [if, below of=input](isNumber){入力が16進数か?};
     \node [if, below of=isNumber](isOver){STT == 0?};
-    \node [block, below of=isOver](inputY){Yに入力された数値を追加};
+    \node [block, below of=isOver, text width=200](inputY){Yに入力された数値を追加 \\ Y\_PD = 1};
     \node [cloud2, right of=isOutStt, node distance=4cm](toOut){出力};
     \node [cloud2, right of=isNumber, node distance=4cm](toOpr){計算};
     \node [cloud, left of=canInput, node distance=7cm](irt1){AC,Eを戻す};
     \node [cloud, left of=inputY, node distance=7cm](irt2){AC,Eを戻す};
-    \node [cloud, left of=isOver, node distance=7cm, text width=100](err1){出力をエラー文に \\ 出力準備完了};
+    \node [cloud, left of=isOver, node distance=7cm, text width=150](err1){PTR\_MG = A\_EMG \\ OUT\_STT = 1 \\ IMSK = 0100};
     % Draw edges
     \path [line, dashed] (entry2) -- (start);
     \path [line] (start) -- (isOutStt);
@@ -429,13 +429,13 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
 \begin{tikzpicture}[node distance = 2.5cm, auto]
     % Place nodes
     \node [cloud2](entryOut){出力};
-    \node [if, below of=entryOut](canOutput){出力可能か?};
+    \node [if, below of=entryOut](canOutput){FGO == 0?};
     \node [if, below of=canOutput](isOut1){OUT\_STT == 1?};
     \node [if, below of=isOut1](isOut2){OUT\_STT == 2?};
-    \node [block, below of=isOut2, text width=150](out3){改行 \\変数初期化 \\BYE = NXT\_BYE};
+    \node [block, below of=isOut2, text width=150](out3){改行文字を出力 \\変数初期化 \\BYE = NXT\_BYE};
     \node [if, below of=out3](isBye){BYE == 1 ?};
-    \node [block, below left of=isBye](enableInput){入力可能にする};
-    \node [block, below right of=isBye](disable){入出力禁止にする};
+    \node [block, below left of=isBye](enableInput){IMSK = 1000};
+    \node [block, below right of=isBye](disable){IMSK = 0000};
     \node [cloud, below right of=enableInput](irt1){AC,Eを戻す};
     \node [cloud, left of=canOutput, node distance=4cm](irt2){AC,Eを戻す};
     \node [block, right of=isOut1, text width=100, node distance=5cm](out1){改行文字を出力 \\ OUT\_STT++};
@@ -461,17 +461,49 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
 }
 
 \newpage
-\scalebox{0.8}[0.8]{
+\scalebox{0.6}[0.6]{
 \begin{tikzpicture}[node distance = 2.5cm, auto]
     % Place nodes
     \node [cloud2](entryOpr){計算};
     \node [if, below of=entryOpr](isWS){入力文字は空白か?};
-    \node [if, below of=isWS](isOp){入力文字は「+」「-」「=」のいずれかか?};
-    \node [block, below of=isOp](swap){ORPとTMIを交換};
+    \node [if, below of=isWS, node distance=5cm](isOp){入力文字は「+」「-」「=」のいずれかか?};
+    \node [block, below of=isOp](swap){入力記号を保存};
     \node [if, below of=swap](isPd){Y\_PD == 0?};
     \node [block, below right of=isPd](setY){Y = X};
+    \node [if, below of=isPd, node distance=5cm](switchOp){1つ前の入力記号はどれか？};
+    \node [block, below left of=switchOp, node distance=5cm](eq){Z = Y};
+    \node [block, below of=switchOp, node distance=5cm](add){Z = X + Y};
+    \node [block, below right of=switchOp, node distance=5cm](sub){Z = X - Y};
+    \node [block, below of=add, text width=150](beforeWriteZ){X = Z \\ Y = Y\_PD = 0};
+    \node [if, below of=beforeWriteZ](isSkipOut){1つ前の記号の記号は「=」か?};
+    \node [cloud, below left of=isSkipOut, node distance=5cm, text width=150](writeZ){ZMGにZを書き込む \\ PTR\_MG = A\_ZMG \\ OUT\_STT = 1 \\ IMSK = 0100};
+    \node [cloud, below right of=isSkipOut, node distance=5cm](skipout){各種変数を初期化};
+    \node [if, right of=isWS, node distance=5cm](isPd2){Y\_PD == 0?};
+    \node [if, below right of=isPd2](ws){STT = 1};
+    \node [cloud, right of=isPd2, node distance=7cm](irt){復帰};
+    \node [cloud, right of=isOp, node distance=10cm, text width=150](err){PTR\_MG = A\_BMG \\ OUT\_STT = 1 \\\ IMSK = 0100};
     % Draw edges
-    \path [line] (entryOut) -- (canOutput);
+    \path [line] (entryOpr) -- (isWS);
+    \path [line] (isWS) -- node{yes}(isPd2);
+    \path [line] (isWS) -- node{no}(isOp);
+    \path [line] (isPd2) -- node {yes}(irt);
+    \path [line] (isPd2) -- node {no}(ws);
+    \path [line] (ws) -- (irt);
+    \path [line] (isOp) -- node {yes}(swap);
+    \path [line] (isOp) -- node {no}(err);
+    \path [line] (swap) -- (isPd);
+    \path [line] (isPd) -- node {yes}(setY);
+    \path [line] (isPd) -- node {no}(switchOp);
+    \path [line] (setY) -- (switchOp);
+    \path [line] (switchOp) -- node {=}(eq);
+    \path [line] (switchOp) -- node {+}(add);
+    \path [line] (switchOp) -- node {-}(sub);
+    \path [line] (eq) -- (beforeWriteZ);
+    \path [line] (add) -- (beforeWriteZ);
+    \path [line] (sub) -- (beforeWriteZ);
+    \path [line] (beforeWriteZ) -- (isSkipOut);
+    \path [line] (isSkipOut) -- node {yes}(skipout);
+    \path [line] (isSkipOut) -- node {no}(writeZ);
 \end{tikzpicture}
 }
 
