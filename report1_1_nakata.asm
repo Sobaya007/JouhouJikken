@@ -1,12 +1,4 @@
 	ORG 10		/ program entry point
-/ check M[X] < 0 ?
-LW,  
-	CLE    / E <- 0 	
-	LDA X  / AC <- M[X]
-	CIL    / {E,AC[15:0]} <- {AC[15:0],E}
-	SZE    / (E == 0) ? skip next
-	BUN LW1 / goto LW1
-	CLA    /AC <- 0
 / check M[Y] == 0 ?
 L0, 	
 	CLE			/ E <- 0
@@ -42,15 +34,7 @@ LP,
 	ADD Z  / AC <- AC + M[Z]
 	STA Z  / M[Z] <- M[Z] 
 	BUN LX / goto LX
-/ sign extension M[W] <- ~M[W]
-LW1,   
-	CLA    / AC <- 0
-  LDA W  / AC <- M[W]
-	CMA    / AC <- ~AC 
-	STA W  / M[W] <- AC
-	CLA    / AC <- 0
-	CLE    / E <- 0
-	BUN L0 / goto L0
+	
 / data
 X,	DEC 65535	/ X = 65535 --> {W,X}:init
 W, 	DEC 0     / (init : 0)

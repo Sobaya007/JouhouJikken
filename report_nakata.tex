@@ -124,8 +124,8 @@ text centered, rounded corners, minimum height=3em]
   \end{tabular}
 \end{table}
 
-乗算は筆算法によって計算している。
-また、16bitのXを32bitの[W;X]に拡張することで倍精度計算行っている。
+乗算は筆算法によって計算している。入力は共に16bit符号なし整数である。
+また、16bitのXを32bitの[W;X]に拡張することで倍精度計算を行っている。
 Yを右回転シフトしEレジスタが1の場合は、[Z,P]に[W;X]を加算する。そして、[W;X]を左回転シフトする。
 これをYが0になるまで繰り返し、筆算法を実現している。　\\
 
@@ -141,22 +141,25 @@ Z += Xの計算後、P += Z+Eを計算している。
 
 \subsubsection{ソースコードと総命令数}
 \lstinputlisting[caption=report1\_1\_nakata.asm]{./report1_1_nakata.asm}
-総命令数:26
+総命令数:28
 
 \subsubsection{異なる入力に対する実行命令ステップ数}
 \begin{table}[h]
   \begin{tabular}{|l|l|l|} \hline
     入力($X \times Y$) & ステップ数 \\ \hline
-    $11 \times 13$ & 99 \\ \hline
-    $0 \times 30$ & 124 \\ \hline
-    $30 \times 0$ & 9 \\ \hline
-    $65535 \times 65535$ & 431 \\ \hline
+    $11 \times 13$ & 94 \\ \hline
+    $0 \times 30$ & 119 \\ \hline
+    $30 \times 0$ & 4 \\ \hline
+    $65535 \times 65535$ & 419 \\ \hline
   \end{tabular}
 \end{table}
 
 \subsubsection{EX3命令セットで改良すべき点}
-桁あふれしたときにEレジスタの中身を変えてくれるようなINC命令が欲しいと感じた。
-それを別の形で実現しようと考え、1をADDする方法も考えたが、即値が扱えないためそれをするのにも手間がかかる。Eレジスタの中身を変えるINCがなくても、即値を扱える機構さえあれば良いと思う。
+
+特になし。
+
+
+
 
 \section*{剰余算}
 \subsection*{柿沼}
@@ -433,6 +436,9 @@ Xを繰り返し10で割ることで10進数文字列Yへと変換し、それ�
 
 \subsubsection{工夫点}
 
+特になし。
+
+
 
 \subsubsection{ソースコードと総命令数}
 \lstinputlisting[caption=report1\_3\_nakata.asm]{./report1_3_nakata.asm}
@@ -450,7 +456,7 @@ Xを繰り返し10で割ることで10進数文字列Yへと変換し、それ�
 \end{table}
 
 \subsubsection{EX3命令セットで改良すべき点}
-即値をADDなどの命令で直接扱えるようにして欲しいと思った。
+即値をADDなどの命令で直接扱えるようにして欲しいと感じた。
 
 \section*{素数計算}
 \subsection*{柿沼}
@@ -515,7 +521,8 @@ Xを繰り返し10で割ることで10進数文字列Yへと変換し、それ�
 Q $\geq$ Yの部分でQ-Yを計算するため、それをそのままQ -= Yに転用した。 \\
 Q $\geq$ Yの計算は\bf{符号なし16bit}整数として計算しなければならないため、Eレジスタを含めた\bf{符号あり17bit}と考えて、適切な計算の後SZEで判定するという手法をとった。
 
-YをEレジスタを含めた17bit符号あり整数と考えた場合、符号反転後はほとんどの場合最上位ビット(Eレジスタ)が立っていることになるが、唯一Yが0のときのみ符号を反転してもEレジスタは0のままなため、反転前のYに対してSZAでEレジスタの値を定めた。
+YをEレジスタを含めた17bit符号あり整数と考えた場合、符号反転後はほとんどの場合最上位ビット(Eレジスタ)が立っていることになるが、唯一Yが0のときのみ符号を反転してもEレジスタは0のままなため、反転前のYに対してSZAでEレジスタの値を定めた。}
+
 
 \subsubsection{ソースコードと総命令数}
 \lstinputlisting[caption=report1\_4.asm]{./report1_4.asm}
@@ -566,10 +573,9 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
 \includegraphics[width=10cm,bb=0 0 579 815]{report1_4_nakata.jpg}}
 
 \subsubsection{工夫点}
-Q $\geq$ Yの部分でQ-Yを計算するため、それをそのままQ -= Yに転用した。 \\
-Q $\geq$ Yの計算は\bf{符号なし16bit}整数として計算しなければならないため、Eレジスタを含めた\bf{符号あり17bit}と考えて、適切な計算の後SZEで判定するという手法をとった。
 
-YをEレジスタを含めた17bit符号あり整数と考えた場合、符号反転後はほとんどの場合最上位ビット(Eレジスタ)が立っていることになるが、唯一Yが0のときのみ符号を反転してもEレジスタは0のままなため、反転前のYに対してSZAでEレジスタの値を定めた。
+特になし。
+
 
 \subsubsection{ソースコードと総命令数}
 \lstinputlisting[caption=report1\_4\_nakata.asm]{./report1_4_nakata.asm}
@@ -588,9 +594,61 @@ YをEレジスタを含めた17bit符号あり整数と考えた場合、符号�
 
 \subsubsection{EX3命令セットで改良すべき点}
 
+任意の大きさの素数のテーブルを容易に作成できるように、動的にメモリの確保できる配列を扱えるようにして欲しいと思った。
 
 
 \chapter*{サンプルプログラム解析レポート(5)}
+
+\section{test\_io1.asm}
+\subsection{プログラムの概要}
+入力された文字を返すプログラムである。 \\
+入出力ポートとしてシリアルポートが選択され、割り込みが発生すると、
+S_INを通して入力された文字をSDTに格納し、SDTに格納された文字をS_OUTを通して出力する。 \\
+ctrl-Dが入力されるとプログラムが終了する。
+
+\subsubsection{各サブルーチンの機能}
+
+\begin{table}[h]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    サブルーチン名 & 機能の説明 \\ \hline
+    INI & プログラム本体のエントリーポイント。各種変数の初期化をする。 \\ \hline
+    ST0 & 割り込みハンドラのエントリーポイント \\ \hline
+    L0 & メインループ。入力可能状態で待機し、ctrl-Dが入力されるとプログラムを終了する。 \\ \hline
+    CEC & 入力された文字がctrl-Dかをチェックする \\ \hline
+    I_HND & 割り込みハンドラ。S_INを通して入力された文字をSDTに格納し、格納された文字をS_OUTを通して出力する。 \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{処理の流れ}
+
+\includegraphics[width=15cm,bb=0 0 947 773]{test_io1.jpg}}
+
+\section{test\_calc1.asm}
+\subsection{プログラムの概要}
+入力された文字を返すプログラムである。初期状態ではパラレルポートが選択される。 \\
+割り込みが発生するごとに、次の2つの動作が交互に発生する。 \\
+・S_INを通して入力された文字をSDTに格納し、SDTに格納された文字をP_OUTを通して出力する。 \\
+・P_INを通して入力された文字をPDTに格納し、PDTに格納された文字をS_OUTを通して出力する。 \\
+ctrl-Dが入力されるとプログラムが終了する。
+
+\subsubsection{各サブルーチンの機能}
+
+\begin{table}[h]
+  \begin{tabular}{|l|p{10cm}|} \hline
+    サブルーチン名 & 機能の説明 \\ \hline
+    INI & プログラム本体のエントリーポイント。各種変数の初期化をする。 \\ \hline
+    ST0 & 割り込みハンドラのエントリーポイント \\ \hline
+    L0 & メインループ。入力可能状態で待機し、ctrl-Dが入力されるとプログラムを終了する。 \\ \hline
+    CEC & 入力された文字がctrl-Dかをチェックする \\ \hline
+    UMK & IMSKを更新する。 \\ \hline
+    I_HND & 割り込みハンドラ。割り込みが発生するごとに、次の2つの動作が交互に発生する。・S_INを通して入力された文字をSDTに格納し、SDTに格納された文字をP_OUTを通して出力する。・P_INを通して入力された文字をPDTに格納し、PDTに格納された文字をS_OUTを通して出力する。 \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection{処理の流れ}
+
+\includegraphics[width=15cm,bb=0 0 942 1155]{test_io2.jpg}}
+
 \section{test\_calc1.asm}
 \subsection{プログラムの概要}
 入力された数値の計算をさせるプログラムである。
