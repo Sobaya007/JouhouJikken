@@ -1,0 +1,241 @@
+\documentclass{jsarticle}
+\usepackage{graphicx, listings, jlisting, xcolor}
+\lstset{%
+  language=Verilog,
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+\title{情報実験第三 1.B}
+
+\author{情報工学科15\_03602 柿沼 建太郎 \\ 情報工学科 15\_10588 中田 光}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section*{各課題担当者}
+各課題と担当者を表として以下に示す。
+\begin{table}[h]
+\begin{tabular}{|l|c|c|} \hline
+課題番号/名前 & 柿沼 & 中田 \\ \hline \hline
+解析1 &  & $\circ$ \\ \hline
+解析2 & $\circ$ & \\ \hline
+解析3 & $\circ$ & \\ \hline
+解析4 & $\circ$ & \\ \hline
+解析5 & $\circ$ & \\ \hline
+シミュレーション1 & $\circ$ & $\circ$ \\ \hline
+シミュレーション2 &  & $\circ$  \\ \hline
+\end{tabular}
+\end{table}
+
+\section*{Verilog記述解析レポート(1,2,3,4,5)}
+
+\subsection*{課題2. 命令フェッチサイクルの動作がVerilogコード上でどのように実現されているか}
+
+Verilogでは条件実行論理式を'wire'あるいは'assign'文の右辺に記述することで、条件が変化するとワイヤーのつながれた先の回路に無待機で情報が伝播する。
+
+\begin{lstlisting}[]
+wire ワイヤー名 = 条件式;
+assign ワイヤー名 = 条件式;
+\end{lstlisting}
+'reg\_lci'または'reg\_lci\_nxt'で宣言されたmoduleはLCIレジスタである。\\
+そこに0を代入する際にはそのクリア信号を1にし、インクリメントする際にはインクリメント信号を1にする。
+
+\begin{lstlisting}[caption=ARの場合]
+assign ar_clr = r & t[0]; //r & t[0]がtrueのときかつその時に限りARをクリア
+assign ar_inr = d[5] & t[4]; //この条件のときのみインクリメントする
+\end{lstlisting}
+
+ロードする際にはロード信号を1にすればよいが、ロード先がレジスタによって異なる。\\
+AR, PC, DR, IR, OUTRは入力がbus\_dataに繋がれており、LCIのロード信号をオンにした上でbus\_ctlの値を操作することで間接的にロードする内容を操作する。
+
+\begin{lstlisting}[caption=$\overline R \cdot T(0) \Rightarrow AR \leftarrow PC$の場合]
+assign ar_ld = ~r & t[0] |
+               ~r & t[2] |
+               ~d[7] & i15 & t[3];
+wire bus_pc = ~r & t[0] & ~com_rst |
+              r & t[1] |
+              d[5] & t[4];
+\end{lstlisting}
+ACについては、ALU内で演算結果を格納するためのレジスタなので、ac\_ldが1になったときはALUの計算結果をロードするようになる。\\
+なお、ac\_ldは
+\begin{lstlisting}
+assign ac_ld = ac_and | ac_add | ac_dr | ac_inpr | ac_cmp | ac_shr | ac_shl;
+\end{lstlisting}
+となっているため、ALUから結果をロードする以外にロードの機会はなく、事実上ACロード機能はないことがわかる。
+
+SCについては、入力先とロード信号の部分に3'b0と1'b0が与えられているので、ロード機能は使われない。
+
+LCIではないD-Flip-Flopで実現されたレジスタは'reg\_dff'というmoduleで宣言される。INPR, I, E, R, S, IEN, FGI, FGO, IOT, IMSKがそれにあたる。\\
+これらに対する代入は、各レジスタに対してxx\_nxtという名前のワイヤーに条件式を充てておくことで実現される。Iについてのみir[15]が割り当てられているが、これもirの中身を見れば条件式と実質同様であるとわかる。
+
+命令フェッチサイクルは条件と代入文の連続から成り、代入文は以上の機能を以て実現される。
+
+\subsection*{課題3. ADD, LDA, CIR, CILにおいて、aluモジュールがどのような動作をするか}
+
+\subsubsection*{ADDについて}
+関連するVerilogコードを抜粋する。
+\begin{lstlisting}
+wire [16:0] o_add = (ac_add) ? ({1'b0, dr} + {1'b0, ac}) : 17'b0;
+assign ac_nxt = ... | o_add[15:0] | ...;
+assign e_nxt = (ac_dd) | o_add[16] : ...;
+\end{lstlisting}
+
+aluモジュールに繋がれた入力信号ac\_addが立っていると、drとacを17ビットとして加算されたものがo\_addに代入される。\\
+ac\_xx信号が同時に2つ以上立たないと仮定すれば、ac\_nxtには加算結果の下位16bitがそのまま代入される。\\
+また、同様にしてe\_nxtにo\_addの最上位ビットが代入される。\\
+これによって、[E, AC] = [0, AC] + [0, DR]という計算が実現される。\\
+
+\subsubsection*{LDAについて}
+関連するVerilogコードを抜粋する。
+\begin{lstlisting}
+wire [16:0] o_dr = (ac_dr) ? (dr) : 16'b0;
+assign ac_nxt = ... | o_dr | ...;
+assign e_nxt = ...  : e;
+\end{lstlisting}
+aluモジュールに繋がれた入力信号ac\_drが立っていると、drの中身がそのままo\_drへ代入される。\\
+ac\_nxtに同様にo\_drがそのまま代入され、e\_nxtについてはどの条件にも触れないため、維持される。\\
+これによって、AC = DRという計算が実現される。
+
+\subsubsection*{CIRについて}
+関連するVerilogコードを抜粋する。
+\begin{lstlisting}
+wire [16:0] o_shr = (ac_shr) ? ({e, ac[15:1]}) : 16'b0;
+assign ac_nxt = ... | o_shr | ...;
+assign e_nxt = ...  : (ac_shr) ? ac[0] : ...;
+\end{lstlisting}
+aluモジュールに繋がれた入力信号ac\_shrが立っていると、[E, AC[15 : 1]がo\_shrへ代入される。\\
+ac\_nxtに同様にo\_shrが代入され、e\_nxtにはacの最下位ビットが代入される。\\
+これによって、[AC, E] = [E, AC]という計算が実現される。
+
+\subsubsection*{CILについて}
+関連するVerilogコードを抜粋する。
+\begin{lstlisting}
+wire [16:0] o_shl = (ac_shl) ? ({ac[14:0], e}) : 16'b0;
+assign ac_nxt = ... | o_shl;
+assign e_nxt = ...  : (ac_shl) ? ac[15] : ...;
+\end{lstlisting}
+aluモジュールに繋がれた入力信号ac\_shlが立っていると、[AC[14 : 0], E]がo\_shlへ代入される。\\
+ac\_nxtに同様にo\_shlが代入され、e\_nxtにはacの最上位ビットが代入される。\\
+これによって、[E, AC] = [AC, E]という計算が実現される。
+
+\subsection*{課題4. FGIレジスタについて，fgi\_set, pt, ir, iot, fgiそれぞれの信号の組合せで出力値が決定する仕組み}
+入出力のVerilogコードについて、関係のある個所のみ以下に抜粋する。
+\begin{lstlisting}
+reg_dff     #2  FGI  (clk, ~com_stop, fgi_nxt & {2{~com_rst}}  , fgi);  /// reset value = 00;
+assign fgi_nxt[0] = (fgi_set[0]) ? 1         :  /// fgi_set[0] : fgi[0] <- 1
+                    (pt & ir[11] & ~iot) ? 0 :  /// INP        : fgi[0] <- 0
+                    fgi[0];                     /// unchanged
+assign fgi_nxt[1] = (fgi_set[1]) ? 1         :  /// fgi_set[1] : fgi[1] <- 1
+                    (pt & ir[11] &  iot) ? 0 :  /// INP        : fgi[1] <- 0
+                    fgi[1];                     /// unchanged
+edge_to_pulse #(4,0) FGP (clk, {fgi_bsy, fgo_bsy}, {fgi_set, fgo_set});
+wire  pt = d[7] &  i15 & t[3]; /// @ t[3] : implies IO register-insn type
+
+assign iot_nxt = (pt & ir[5]) ? 1            :  /// SIO : iot  <- 1
+                 (pt & ir[4]) ? 0            :  /// PIO : iot  <- 0
+                 iot;                           /// unchanged
+\end{lstlisting}
+
+FGIは2ビットのD-Flip-Flop型のレジスタで、0番はパラレル通信、1番はシリアル通信用となっている。\\
+ptは間接アドレスフェッチサイクルのときに立つフラグで、ir[11]はワンホットコードのうちINP命令かどうかを示すbitである。\\
+IOTは現在使用中なのがシリアルかパラレルかを示すフラグであり、SIO命令が来ると1に、PIO命令が来ると0になることから、0のときはパラレル通信で1のときはシリアル通信を表現する。\\
+fgi\_setはであるようなフラグである。\\
+このプログラムではedge\_to\_pulseをネガティブエッジパルス生成器としてインスタンス化しており、出力信号にfgi\_setが充ててあるためfgi\_setはfgi\_bsyの値が1から0になったクロックでのみ1を示す。\\
+
+したがって、各FGIは、busy状態が解除されたら1, INP命令が来ておりかつ間接アドレスフェッチサイクルまで来ていてかつIOTによって自身が選択されていたら0に、そうでなければ維持される。
+
+\subsection*{課題5. ARレジスタの出力信号がarとar\_nxtの2つある理由}
+ex3のCPUの中でレジスタは大きく分ければLCIレジスタとDFFレジスタが使われており、それらはそれぞれ'reg\_lci'と'reg\_dff'という名前で定義されている。\\
+しかしARレジスタに限り、'reg\_lci\_nxt'という名前のmoduleを使っている。\\
+'reg\_lci\_nxt'は'reg\_lci'に加え、「まだ代入されていない値」を出力するという機能がついている。\\
+
+一般的にレジスタへの代入は、レジスタへの入力信号に値を入れたまま待機し、クロックの立ち上がりが来た瞬間に出力にそれが反映される。\\
+しかし、'reg\_lci\_nxt'ではまだ出力信号に来ていないような待機状態の値も出力するという機能がある。 この必要性について考える。\\
+
+まず、メモリのロード先アドレスを示すワイヤー'mem\_addr'について次のような記述がある。
+\begin{lstlisting}
+wire [11:0]   mem_addr = (com_stop) ? com_addr : (mem_we) ? ar : ar_nxt;
+\end{lstlisting}
+'mem\_we'はメモリに対して書き込みを行うときに立つフラグであるため、メモリは書き込み時にはarを、読み込み時にはar\_nxtを使うことがわかる。\\
+このことから、メモリを読むときだけはクロックの立ち上がりを待ってはいられない理由があると考えた。\\
+
+ここで、間接アドレスフェッチサイクルからメモリ参照命令実行サイクルへ移行するタイミングについて考える。\\
+まず、間接アドレスフェッチの立ち上がりでメモリからの読み出しが行われる(メモリは同期式なので立ち上がりの瞬間にしか出力の値は変更されない)。\\
+次の立ち上がりでARへの書き込みが起きる。\\
+すると、メモリ参照命令実行サイクルの始まりではARへの書き込みと読み出しが同時に行われるこことになる。\\
+もしメモリからの読み出しにarを使っていたとすると、書き込み中の値を使用することになるため、値移行中の不定値を使用することになりメモリ読み出しが破綻する。\\
+しかしar\_nxtを使うことにより、まだARの本来の出力に来ていない値を使用することができるため安全に読み出しができる。\\
+
+ではすべての時にar\_nxtを使えばよいかというとそれでは問題が起きる場合がある。\\
+BSA命令の実行サイクルを見てみると、
+$AR \leftarrow AR + 1, M[AR] \leftarrow PC$
+となっている。ARへの書き込みが起きている途中はar\_nxtの値が今度は不定となる。\\
+したがって、書き込みのときには不定ではないarを使う必要がある。
+
+\section*{Verilogシミュレーションレポート(1,2)}
+
+\subsection*{1. 4つの課題プログラムそれぞれについて4つ以上の異なる入力に対する実行サイクル数とそれに関する考察}
+
+\subsubsection*{倍制度乗算}
+柿沼:
+実行サイクル数
+\begin{table}[h]
+  \begin{tabular}{|l|l|l|l|l|} \hline
+    入力($X \times Y$) & ステップ数(前回) & ステップ数(今回) & 実行サイクル数(今回) \\ \hline
+    $11 \times 13$ & 90 & 93 & 445\\ \hline
+    $0 \times 30$ & 114 & 117 & 564 \\ \hline
+    $30 \times 0$ & 4 & 7 & 21\\ \hline
+    $65535 \times 65535$ & 403 & 406 & 1985 \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection*{剰余算}
+柿沼:
+実行サイクル数
+\begin{table}[h]
+  \begin{tabular}{|l|l|l|l|l|} \hline
+    入力($X \times Y$) & ステップ数(前回) & ステップ数(今回) & 実行サイクル数(今回) \\ \hline
+    $30 \div 7$ & 340 & 343 & 1654 \\ \hline
+    $0 \div 15$ & 336 & 339 & 1634 \\ \hline
+    $65535 \div 1$ & 400 & 403 & 1954 \\ \hline
+    $65535 \div 65535$ & 340 & 343 & 1654 \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection*{16進$\rightarrow$ 10進}
+柿沼:
+実行サイクル数
+\begin{table}[h]
+  \begin{tabular}{|l|l|l|l|l|} \hline
+    入力($X \times Y$) & ステップ数(前回) & ステップ数(今回) & 実行サイクル数(今回) \\ \hline
+    $0F$ & 783 & 786 & 3832 \\ \hline
+    $FFFF$ & 1957 & 1960 & 9583 \\ \hline
+    $XX$ & 67 & 70 & 370 \\ \hline
+    $ABCX$ & 157 & 160 & 820 \\ \hline
+  \end{tabular}
+\end{table}
+
+\subsubsection*{素数計算}
+柿沼:
+実行サイクル数
+\begin{table}[h]
+  \begin{tabular}{|l|l|l|l|l|} \hline
+    入力($X \times Y$) & ステップ数(前回) & ステップ数(今回) & 実行サイクル数(今回) \\ \hline
+    $2$ & 27 & 30 & 129 \\ \hline
+    $64$ & 61307 & 61310 & 297992 \\ \hline
+    $255$ & 337101 & 337103 & 1638582(※) \\ \hline
+    $65535$ & 245377052 & 245377054 & 1192716791(※)\\ \hline
+  \end{tabular}
+\end{table}
+
+※CPU\_MONITORINGを消した。そのため、ステップ数も実行サイクル数も1少ない。
+
+\end{document}

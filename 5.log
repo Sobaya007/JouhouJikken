@@ -1,0 +1,13 @@
+This is TeX, Version 3.14159265 (TeX Live 2015/Debian) (preloaded format=tex 2017.4.27)  25 MAY 2017 10:28
+**/tmp/nvimZOfet7/5
+(/tmp/nvimZOfet7/5
+! Undefined control sequence.
+l.1 \documentclass
+                  {jsarticle}
+? 
+! Emergency stop.
+l.1 \documentclass
+                  {jsarticle}
+End of file on the terminal!
+
+No pages of output.
