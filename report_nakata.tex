@@ -27,7 +27,7 @@
 課題番号/名前 & 柿沼 & 中田 \\ \hline \hline
 解析1 &  & $\circ$ \\ \hline
 解析2 & $\circ$ & \\ \hline
-解析3 & $\circ$ & \\ \hline
+解析3 & $\circ$ & $\circ$ \\ \hline
 解析4 & $\circ$ & \\ \hline
 解析5 & $\circ$ & \\ \hline
 シミュレーション1 & $\circ$ & $\circ$ \\ \hline
@@ -47,7 +47,7 @@ wire com_rst = (com_ctl == `COM_RST); /// reset (pc, sc, ar, 1-bit FFs)
 \end{lstlisting}
 
 つまり、com\_rst=1となる時について考えればよい。\\
-次に、reg\_lciとして定義されたSCは、出力する値をクリアするフラグとしてsc\_clr|com\_rstが指定されている。 \\
+次に、reg\_lciとして定義されたSCでは、出力する値をクリアするフラグとしてsc\_clr|com\_rstが指定されている。 \\
 com\_rst=1の時はSCの出力scは0となる。
 
 \begin{lstlisting}[caption=cpu\_ex3.v 73行目]
@@ -143,7 +143,7 @@ LCIではないD-Flip-Flopで実現されたレジスタは'reg\_dff'というmo
 命令フェッチサイクルは条件と代入文の連続から成り、代入文は以上の機能を以て実現される。
 
 \subsection*{課題3. ADD, LDA, CIR, CILにおいて、aluモジュールがどのような動作をするか}
-
+柿沼: 
 \subsubsection*{ADDについて}
 関連するVerilogコードを抜粋する。
 \begin{lstlisting}
@@ -188,7 +188,81 @@ assign e_nxt = ...  : (ac_shl) ? ac[15] : ...;
 \end{lstlisting}
 aluモジュールに繋がれた入力信号ac\_shlが立っていると、[AC[14 : 0], E]がo\_shlへ代入される。\\
 ac\_nxtに同様にo\_shlが代入され、e\_nxtにはacの最上位ビットが代入される。\\
-これによって、[E, AC] = [AC, E]という計算が実現される。
+これによって、[E, AC] = [AC, E]という計算が実現される。 \\
+\\
+\\
+中田:
+\subsubsection*{ADDについて}
+まず,ADDの実行サイクル6でac\_addが1となる。 \\
+\begin{lstlisting}[caption=cpu\_ex3.v 166行目]
+assign ac_add  = d[1] & t[5]; /// ADD @ t[5] : ac <- ac + dr;
+\end{lstlisting}
+次に、aluにおいて、ac\_add=1であるため\{0,dr\}と\{0,ac\}が加算されたものがo\_addに代入される。そして、ac\_nxtにはo\_add[15:0]、e\_nxtにはo\_add[16]が出力される。(変更のあったレジスタ以外のレジスタo\_*は0であるため、変更のあったレジスタの値がac\_nxtに代入される。e\_nxtは条件文に沿った値が代入される。他の命令についても同様である。) \\
+これによってAC+DRの加算が実現する。
+\begin{lstlisting}[caption=cpu\_module.v ALU modelより]
+wire   [16:0] o_add  = (ac_add)  ? ({1'b0, dr} + {1'b0, ac}) : 17'b0;
+assign ac_nxt = o_and | o_add[15:0] | o_dr | o_inpr | o_cmp | o_shr | o_shl;
+assign e_nxt =  (ac_add) ? o_add[16] :
+                    (ac_shr) ? ac[0] :
+                    (ac_shl) ? ac[15] :
+                    (e_clr)  ? 1'b0 :
+                    (e_cmp)  ? ~e : e;
+\end{lstlisting}
+
+\subsubsection*{LDAについて}
+まず,LDAの実行サイクル6でac\_drが1となる。 \\
+\begin{lstlisting}[caption=cpu\_ex3.v 167行目]
+assign ac_dr   = d[2] & t[5];    /// LDA @ t[5] : ac <- dr;
+\end{lstlisting}
+次に、aluにおいて、ac\_dr=1であるため、drがo\_drに代入される。そして、ac\_nxtにはo\_dr、e\_nxtにはeが出力される。 \\
+これによりAC←DRが実現する。
+\begin{lstlisting}[caption=cpu\_module.v ALU modelより]
+wire   [15:0] o_dr   = (ac_dr)   ? (dr) : 16'b0;
+assign ac_nxt = o_and | o_add[15:0] | o_dr | o_inpr | o_cmp | o_shr | o_shl;
+assign e_nxt =  (ac_add) ? o_add[16] :
+                    (ac_shr) ? ac[0] :
+                    (ac_shl) ? ac[15] :
+                    (e_clr)  ? 1'b0 :
+                    (e_cmp)  ? ~e : e;
+\end{lstlisting}
+
+\subsubsection*{CIRについて}
+まず,CIRの実行サイクル4でac\_shrが1となる。 \\
+\begin{lstlisting}[caption=cpu\_ex3.v 170行目]
+assign ac_shr  = rt & ir[7]; /// CIR : ac[14:0] <- ac[15:1], ac[15] <- e, e_nxt <- ac[0];
+\end{lstlisting}
+次に、aluにおいて、ac\_shr=1であるため、o\_shrに\{e,ac[15:1]\}が代入される。そして、ac\_nxtにはo\_shr、e\_nxtにはac[0]が出力される。 \\
+これによりACの回転右シフトが実現する。
+\begin{lstlisting}[caption=cpu\_module.v ALU modelより]
+wire   [15:0] o_shr  = (ac_shr)  ? ({e, ac[15:1]}) : 16'b0;
+assign ac_nxt = o_and | o_add[15:0] | o_dr | o_inpr | o_cmp | o_shr | o_shl;
+assign e_nxt =  (ac_add) ? o_add[16] :
+                    (ac_shr) ? ac[0] :
+                    (ac_shl) ? ac[15] :
+                    (e_clr)  ? 1'b0 :
+                    (e_cmp)  ? ~e : e;
+\end{lstlisting}
+
+\subsubsection*{CILについて}
+まず,CILの実行サイクル4でac\_shlが1となる。 \\
+\begin{lstlisting}[caption=cpu\_ex3.v 171行目]
+assign ac_shl  = rt & ir[6]; /// CIL : ac[15:1] <- ac[14:0], ac[0]  <- e, e_nxt <- ac[15];
+\end{lstlisting}
+次に、aluにおいて、ac\_shl=1であるため、o\_shlに\{ac[14:0],e\}が代入される。そして、ac\_nxtにはo\_shl、e\_nxtにはac[15]が出力される。 \\
+これによりACの回転左シフトが実現する。
+\begin{lstlisting}[caption=cpu\_module.v ALU modelより]
+wire   [15:0] o_shl  = (ac_shl)  ? ({ac[14:0], e}) : 16'b0;
+assign ac_nxt = o_and | o_add[15:0] | o_dr | o_inpr | o_cmp | o_shr | o_shl;
+assign e_nxt =  (ac_add) ? o_add[16] :
+                    (ac_shr) ? ac[0] :
+                    (ac_shl) ? ac[15] :
+                    (e_clr)  ? 1'b0 :
+                    (e_cmp)  ? ~e : e;
+\end{lstlisting}
+
+
+
+
 
 \subsection*{課題4. FGIレジスタについて，fgi\_set, pt, ir, iot, fgiそれぞれの信号の組合せで出力値が決定する仕組み}
 入出力のVerilogコードについて、関係のある個所のみ以下に抜粋する。
@@ -355,7 +429,7 @@ $AR \leftarrow AR + 1, M[AR] \leftarrow PC$
     $000F$ & 487 & 490 & 2387 \\ \hline
     $FFFF$ & 1724 & 1727 & 8292 \\ \hline
     $00XX$ & 74 & 30877 & 31212 \\ \hline
-    $ABCX$ & 107 & 30911 & 31391 \\ \hline
+    $ABCX$ & 107 & 30910 & 31391 \\ \hline
   \end{tabular}
 \end{table}
 
@@ -389,8 +463,8 @@ $AR \leftarrow AR + 1, M[AR] \leftarrow PC$
 ステップ数で割った値の平均は4.83となったため、実験結果は妥当であったと言える。 \\
 \\
 \subsubsection*{最後に3回同じ命令が繰り返されてしまう点について}
-test\_fpga\_ex3.vではステップ数と実行サイクル数のカウントはタスクSHOW\_CPU\_STATUSを呼び出すことで行っている。 \\
-このSHOW\_CPU\_STATUSはクロックが落ちる時にEX3が実行状態であると実行されるタスクである \\
+test\_fpga\_ex3.vではステップ数と実行サイクル数のカウントをタスクSHOW\_CPU\_STATUSを呼び出すことで行っている。 \\
+このSHOW\_CPU\_STATUSは呼び出された時にクロックが落ち、EX3が実行状態であると実行されるタスクである。 \\
 この問題は、このSHOW\_CPU\_STATUSを余分に3回呼び出しているために発生していると考える。 \\
 以下、その3つの実行サイクルについて考察する。 \\
 \\
@@ -403,12 +477,10 @@ while (s | (|(~FPGA_EX3.fgo))) SHOW_CPU_STATUS(0);
 
 このwhile文は出力フラグレジスタが初期状態の3であれば、s=1の間は繰り返され、HLTによってs=0となるとループが終了する。 \\
 しかし、実際は最後の実行サイクルにあたるSHOW\_CPU\_STATUSが実行された後、クロックが立ちHLTによってsが0に切り替わる前に
-while文の条件式の判定が実行されてしまい、次のクロックが落ちるときに余分にSHOW\_CPU\_STATUSが実行されてしまうのである。 \\
+while文の条件式の判定が実行されてしまい、次のクロックが落ちるときに余分にSHOW\_CPU\_STATUSが実行されてしまうのである。これによって1回余分に実行サイクルが生まれていると考えられる。 \\
 \\
 ・2つ目の実行サイクルについて \\
-これは次の文によって必ず発生する。ここでは引数1をとっているが、引数が1の場合はCPU\_MONITORINGのコメントアウトの有無に関わらず、 \\
-内部の状態がターミナルに表示される。そのため、CPU\_MONITORINGをコメントアウトした場合はここでの内部の状態が表示され、
-実行サイクル数が2つ増えたものとなる。
+これは次の文によって必ず発生する。ここでは引数1をとっているが、引数が1の場合はCPU\_MONITORINGのコメントアウトの有無に関わらず、内部の状態がターミナルに表示される。そのため、CPU\_MONITORINGをコメントアウトした場合はここでの内部の状態が表示され、実行サイクル数が2つ増えたものとなる。
 
 \begin{lstlisting}[caption=test\_fpga\_ex3.v 265行目]
 SHOW_CPU_STATUS(1);
@@ -425,19 +497,84 @@ KEY_ACTION(1); /// run state --> stop state
 SHOW_CPU_STATUS(0); KEY[key_idx] <= 0;
 \end{lstlisting}
 
-1つ目のSHOW\_CPU\_STATUSはEX3が実行状態であるため実行されるが、次にKEY[1]<=0が実行されEX3が中断状態になるため、 \\
-それ以降にSHOW\_CPU\_STATUSを呼び出しても実行されないのである。 \\
+1つ目のSHOW\_CPU\_STATUSはEX3が実行状態であるため実行されるが、次にKEY[1]←0が実行されEX3が中断状態になり、それ以降にSHOW\_CPU\_STATUSを呼び出しても実行されないのである。 \\
 
-・3つの実行されている実行サイクルについて
+・3つの実行されている実行サイクルについて \\
 HLT命令以降はs=0となり、scが常にクリアされ0になるため、1つ目の実行サイクルのAR←PCが常に実行されていると考えられる。 \\
 
 \subsubsection*{エラー出力となる演算において、実行サイクル数が膨大になる点について}
+これはエラーの出力にシリアルポートを利用しているため出力に時間がかかり、その間出力フラグレジスタが1となり
+ソースコード9のwhile文が繰り返されていることが原因だと考えられる。 \\
+シリアルポート通信に時間がかかってしまう点については、シミュレーションレポート2と内容が被るため、ここでは省略する。 \\
+
+\newpage
+
+\subsection*{2. シリアルポートを用いたtest\_io1およびパラレルポートを用いたものに変更したプログラムのシミュレーション時間の違いについての考察}
 
 
 
+\subsubsection*{test\_io1:シリアルポート}
+実行結果
+\begin{table}[h]
+  \begin{tabular}{|l|l|l|l|l|} \hline
+    入力 & ステップ数 & 実行サイクル数 & シミュレーション時間 \\ \hline
+    $ctrl-D$ & 37072 & 61991 & 6235000 \\ \hline
+    $a→ctrl-D$ & 43281 & 92992 & 9335100 \\ \hline
+    $a→b→ctrl-D$ & 49475 & 123990 & 12434900 \\ \hline
+  \end{tabular}
+\end{table}
 
+\subsubsection*{test\_io1:パラレルポート}
+実行結果
+\begin{table}[h]
+  \begin{tabular}{|l|l|l|l|l|} \hline
+    入力 & ステップ数 & 実行サイクル数 & シミュレーション時間 \\ \hline
+    $ctrl-D$ & 73 & 344 & 70300 \\ \hline
+    $a→ctrl-D$ & 123 & 590 & 94900 \\ \hline
+    $a→b→ctrl-D$ & 161 & 776 & 113500 \\ \hline
+  \end{tabular}
+\end{table}
+\\
+\\
+\\
+UART-RXおよびUART-TXの通信開始から終了までのシミュレーション時間: 3093200
 
+\subsubsection*{考察}
 
+\subsubsection*{クロックとシミュレーション時間について}
+以下の記述からクロックはシミュレーション時間で50ごとに切り替わる。よってシミュレーション時間での100が
+クロックの1周期であり、シミュレーション時間を100で割ったものがクロックの発生回数である。 \\
+
+\begin{lstlisting}[caption=test\_fpga\_ex3.v 92行目]
+always # 50 clk = ~clk;
+\end{lstlisting}
+
+\subsubsection*{シミュレーション時間の違いについて}
+実験結果よりシリアルポートを使用した方がシミュレーション時間がパラレルポートに比べ100倍近く増えていることがわかる。
+これは、パラレルポートでは入出力に1クロック分のシミュレーション時間がかかっているのに対し、シリアルポートではUARTの通信を行うごとにシミュレーション時間が3093200かかっているためであると考えられる。 \\
+シリアルポートにおいて、入力が1つの場合はUART-RX、UART-TXそれそれ一回ずつ通信を行うため、全てのUART通信にかかるシミュレーション時間は3093200×2 =6186400となる。 \\
+複数の入力の場合は、2つ目以降のUART-RX通信ではその一つ前の入力のUART-TXとほぼ並列に通信が行われるため、
+k個の入力があった場合、全てのUART通信にかかるシミュレーション時間はおよそ3093200×(k+1)となると言える。
+test\_io1では入出力以外の命令にかかるシミュレーション時間は3093200に比べ極めて少ないため、実際に実行結果でも
+入力数をk個とするとシミュレーション時間が3093200×(k+1)に近い値をとっている。 \\
+
+\subsubsection*{UART通信にかかるシミュレーション時間について}
+・UART-RXについて \\
+uart\_rxモジュールは1bitごとの入力を受け取り、8bitのデータとして返すモジュールである。この動作原理を説明する。 \\
+uart\_rxでは11bit(start bit 1bit + 入力データ 8bit + parity bit 1bit + end bit 1bit)のレジスタrx\_shiftが用意されており、
+そこに右シフトによって1bitごとにビットを格納していき、全てのシフトが完了するとrx\_shift(8:1)を出力する。 \\
+この右シフトはボーフェイズごとに行われ、ボーフェイズは4つのフェイズに分かれている。1つのフェイズではクロックの発生を
+baud\_tickによって702回カウントした後、フェイズごとに違った動作を行う。フェイズ1、フェイズ3ではカウント後にbaud\_tickを0にリセットし次のフェイズに移行する。フェイズ2ではカウント後、rx\_shiftの右シフトを行い、baud\_tickを0にリセットして次のフェイズに移行する。フェイズ4ではカウント後、baud\_tickを0にリセットし、bit\_countを1増やして次のボーフェイズのフェイズ1に移行する。 \\
+この一連のフェイズを１つのボーフェイズとして、このボーフェイズが11回繰り返される。 \\
+つまり、1つのボーフェイズでは(702+1)×4=2812回クロックが発生することになる。これは1bit読み込むのに必要なクロック数であり、動作周波数をボーレートで割った値 27MHz÷9.6KHz=2812.5に近い値となっている。値に誤差がある原因は、BAUD\_PERIODの値を小数点以下切り捨てにして定めているためである。
+また、ボーフェイズは11回繰り返されるため、1回のUART-RX通信でクロックは2812×11=30932回発生することになる。これは実行結果のUART-RX通信の開始から終了までにクロックが発生した回数に等しい。 \\
+\\
+\\
+・UART-TXについて \\
+uart\_txモジュールは8bitの入力を受け取り、1bitごとのデータを返すモジュールである。この動作原理について説明する。 \\
+uart\_txにもuart\_rxと同様に11bitのレジスタtx\_shiftが用意されており、tx\_shiftは\{1,tx\_parity,入力データ 8bit,0\}と初期化される。出力ポートのtx\_doutはtx\_shift[0]が連続代入されており、tx\_doutの値はtx\_shiftを右シフトするごとに切り替わる。この右シフトを11回繰り返すことで、1bitごとの出力を行っている。 \\
+uart\_txでもボーフェイズが存在するが4つのフェイズには分かれていない。uart\_txでは１つのボーフェイズ内でbaud\_tickによってクロックの発生を2811回カウントし、次のクロックでtx\_shiftを右シフトし、baud\_tickの値を0にリセットする。このボーフェイズを11回繰り返している。 \\
+uart\_txのボーフェイズでもクロックが2812回発生し、一回のUART-TX通信でクロックは2812×11=30932回発生する。これについても実行結果に一致している。
 
 
 
