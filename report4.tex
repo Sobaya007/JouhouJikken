@@ -1,0 +1,100 @@
+\documentclass{jsarticle}
+\usepackage{graphicx, listings, jlisting, xcolor, colortbl}
+\lstset{%
+  language=Verilog,
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+\title{情報実験第三 課題2}
+
+\author{15\_03602 柿沼 建太郎 \\ 情報工学科 15\_10588 中田 光}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section*{作成したプログラムの概要}
+今回の課題では、課題1で作成された電卓プログラムの改造を行った。
+Verilogコードの改変とEX3のコードの改変をともに行った。
+追加・変更する予定であった機能は以下の通り。
+\subsection*{Verilogコードの追加/変更}
+\begin{itemize}
+    \item CPUの32bit化
+    \item 命令数の追加
+    \item 固定小数を実装
+    \item メモリ参照命令を追加(減算,乗算,除算,剰余)
+\end{itemize}
+\subsection*{EX3コードの追加/変更}
+\begin{itemize}
+    \item 小数の入力受付
+    \item 表示の10進化
+    \item 乗算,除算,剰余,平方根などの新たな演算の実装
+\end{itemize}
+しかしこの内「減算・剰余命令の追加」と「固定小数の実装」及びそのソフトウェア側での対応は時間が足りず間に合わなかった。
+
+\section*{各作業の担当者}
+\begin {table}[h]
+    \begin {tabular}{|c|c|} \hline
+        \rowcolor[rgb]{0.85, 1.0, 1.0} 作業名 & 担当者 \\ \hline
+        CPUの32bit化 & 柿沼 \\ \hline
+        命令数の追加 & 柿沼 \\ \hline
+        メモリ参照命令の追加 & 柿沼 \\ \hline
+        小数の入力受付 & 中田 \\ \hline
+        表示の10進化 & 中田 \\ \hline
+        乗算,除算,剰余,平方根などの新たな演算の実装 & 中田 \\ \hline
+    \end {tabular}
+\end {table}
+
+\section*{Verilogコードの追加/改変}
+担当者 柿沼
+
+\subsection*{CPUの32bit化}
+与えられたVerilogコードで実装されたCPUは16bitCPUであったが、固定小数による計算をするにあたって16bitでは精度が足りないと判断し、ACレジスタなどの容量を32bitまで拡張した。
+具体的には以下のように改変した。
+\begin {itemize}
+    \item ALUの32bit計算対応
+    \item RAMとROMの32bit化
+    \item DR,ACレジスタの容量の32bit化
+    \item バス容量の32bit化
+\end {itemize}
+前回の課題でACレジスタの中身を7セグメント表示用レジスタに転送する命令を作成したが、7セグメントディスプレイには16bitぶんしか表示できなかったため、下位16bitのみしか表示されていない。
+LEDでの表示についても同様の対処がされている。
+また、与えられたEX3シミュレータは出力するファイルが16bitのデータとなっていたため、32bit出力するように対応した。
+
+\subsection*{命令数の追加とメモリ参照命令の追加}
+掛け算命令や割り算命令などを追加したほうがソフトウェア側での高機能な計算が楽になると思い、Verilogコード側で実装することにした。
+具体的にはメモリ参照命令で掛け算と割り算を行う「MUL」と「DIV」を実装した。
+掛け算や割り算命令はメモリ参照命令でありオペコードに空きがなかったため、オペコードを16bitから17bitに変更した。
+オペコードの割り当てについては変更を最小限にするためにIRレジスタの16,14,13,12bit目の計4bitを見て命令種別を判別することとした。
+そのため掛け算命令「MUL」のオペコードは10XXXと18XXX、割り算命令「DIV」のオペコードは11XXXと19XXXとなっている。
+
+\section*{感想}
+柿沼
+
+CPUの32bit化の作業中にバグが大量に発生し、ほとんどその対応に時間を使ってしまった。
+数字を変えるだけだと侮っていたと思う。
+結局何度か修正していたら直ったが、原因はよくわからなかった。
+命令の拡張などはすぐにできたので、バグが大量発生した時点で早めに打ち切り、固定小数の実装に移っておくべきだったと今では思う。
+固定小数の実装が間に合わなかったため根号計算などが作れなかったのが痛手だと感じる。
+また、Verilogシミュレータをうまく使いこなせなかったのも時間のロスの原因だと思う。
+入出力の部分が見にくかったので結局ほとんどのデバッグをFPGAでやっていたのだが、ビルドに時間が掛かる上に授業中しかデバッグができない。Verilogシミュレータを使いこなせばもう少し効率的に作業ができたのではないかと思う。
+
+\section*{EX3シミュレータのコード}
+\lstinputlisting[caption=common\_asm.h, language=c++]{common_asm.h}
+\lstinputlisting[caption=ex3\_asm.cpp, language=c++]{ex3_asm.cpp}
+\lstinputlisting[caption=ex3\_asm.h, language=c++]{ex3_asm.h}
+\lstinputlisting[caption=ex3\_asm\_def.h, language=c++]{ex3_asm_def.h}
+
+\section*{Verilogコード}
+\lstinputlisting[caption=cpu\_ex3.v, language=verilog]{cpu_ex3.v}
+\lstinputlisting[caption=cpu\_module.v, language=verilog]{cpu_module.v}
+\lstinputlisting[caption=def\_ex3.v, language=verilog]{def_ex3.v}
+\lstinputlisting[caption=fpga\_ex3.v, language=verilog]{fpga_ex3.v}
+\end{document}

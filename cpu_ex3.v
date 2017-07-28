@@ -25,18 +25,20 @@ module cpu_ex3 (clk, com_ctl, com_addr,
 
     output        s, r, e;
 
-    output [15:0] bus_data, mem_data, dr, ac, ir;
+    output [31:0] mem_data, bus_data;
+    output [19:0] ir;
+    output [31:0] dr, ac;
     output [11:0] ar, pc;
     output [2:0]  sc;
     output        sc_clr;
-    output        seg
+    output [15:0] seg;
 
     wire          com_rst    = (com_ctl == `COM_RST); /// reset (pc, sc, ar, 1-bit FFs)
     wire          com_start  = (com_ctl == `COM_RUN); /// release all resets
     wire          com_stop   = (com_ctl == `COM_STP); /// stop (freeze all)
 
     wire   [2:0]  bus_ctl;
-    wire   [15:0] ac_nxt;
+    wire   [31:0] ac_nxt;
 
     wire          e_nxt, i15, r_nxt, ien_nxt, s_nxt, iot_nxt;
     wire   [3:0]  imsk_nxt;
@@ -48,7 +50,7 @@ module cpu_ex3 (clk, com_ctl, com_addr,
     wire          pc_ld, pc_inr, pc_clr;
     wire          dr_ld, dr_inr, dr_clr;
     wire          ac_ld, ac_inr, ac_clr;
-    wire          ac_and, ac_add, ac_dr, ac_inpr, ac_cmp, ac_shr, ac_shl;
+    wire          ac_and, ac_add, ac_dr, ac_inpr, ac_cmp, ac_shr, ac_shl, ac_mult, ac_div;
     wire          e_clr, e_cmp;
 
     wire          mem_we;
@@ -58,16 +60,16 @@ module cpu_ex3 (clk, com_ctl, com_addr,
 
     wire [11:0]   ar_nxt;    /// ar_nxt is the value of ar at next clock (needed for synchronous RAM)
     wire [11:0]   mem_addr = (com_stop) ? com_addr : (mem_we) ? ar : ar_nxt;
-    wire [15:0]   mem_din  = bus_data;
+    wire [31:0]   mem_din  = bus_data;
 
-    ram_sync_4kx16 MEM   (clk, mem_we & ~com_stop, mem_addr, mem_din, mem_data);
+    ram_sync_4kx32 MEM   (clk, mem_we & ~com_stop, mem_addr, mem_din, mem_data);
 
     reg_lci_nxt #12 AR   (clk, ~com_stop, bus_data[11:0], ar, ar_nxt, ar_ld, ar_clr, ar_inr);
     reg_lci     #12 PC   (clk, ~com_stop, bus_data[11:0], pc, pc_ld | com_rst, pc_clr, pc_inr);
 
-    reg_lci     #16 DR   (clk, ~com_stop, bus_data, dr, dr_ld, dr_clr, dr_inr);
-    reg_lci     #16 AC   (clk, ~com_stop, ac_nxt,   ac, ac_ld, ac_clr, ac_inr);
-    reg_lci     #16 IR   (clk, ~com_stop, bus_data, ir, ir_ld, 1'b0,   1'b0);
+    reg_lci     #32 DR   (clk, ~com_stop, bus_data, dr, dr_ld, dr_clr, dr_inr);
+    reg_lci     #32 AC   (clk, ~com_stop, ac_nxt,   ac, ac_ld, ac_clr, ac_inr);
+    reg_lci     #20 IR   (clk, ~com_stop, bus_data[19:0], ir, ir_ld, 1'b0,   1'b0);
 
     reg_lci     #8  OUTR (clk, ~com_stop, bus_data[7:0], outr, outr_ld, com_rst, 1'b0);
     reg_dff     #8  INPR (clk, ~com_stop, inpr_in, inpr);
@@ -87,15 +89,15 @@ module cpu_ex3 (clk, com_ctl, com_addr,
 
 	edge_to_pulse #(4,0) FGP (clk, {fgi_bsy, fgo_bsy}, {fgi_set, fgo_set});
 
-    alu    ALU (dr, inpr, ac, e, ac_nxt, e_nxt, ac_and, ac_add, ac_dr, ac_inpr, ac_cmp, ac_shr, ac_shl, e_clr, e_cmp);
+    alu    ALU (dr, inpr, ac, e, ac_nxt, e_nxt, ac_and, ac_add, ac_dr, ac_inpr, ac_cmp, ac_shr, ac_shl, ac_mult, ac_div, e_clr, e_cmp);
 
-    bus    BUS (bus_ctl, `PROGRAM_ENTRY_POINT, {4'b0, ar}, {4'b0, pc}, dr, ac, ir, 16'b0, mem_data, bus_data);
+    bus  #32  BUS (bus_ctl, {16'b0, `PROGRAM_ENTRY_POINT}, {20'b0, ar}, {20'b0, pc}, dr, ac, {12'b0, ir}, 32'b0, mem_data, bus_data);
 
     wire  [7:0] t;
-    wire  [7:0] d;
+    wire  [15:0] d;
 
     dec_3to8  DEC_T  (sc, t, 1'b1);         /// (t[k] == 1) implies sc = k;
-    dec_3to8  DEC_D  (ir[14:12], d, 1'b1);  /// (d[k] == 1) implies ir[14:12] = k;
+    dec_4to16  DEC_D  ({ir[16], ir[14:12]}, d, 1'b1);  /// (d[k] == 1) implies ir[14:12] = k;
                                             /// (d[7] == 1) implies non-memory-insn type
 
     wire        rt = d[7] & ~i15 & t[3]; /// @ t[3] : implies register-insn type
@@ -169,13 +171,15 @@ module cpu_ex3 (clk, com_ctl, com_addr,
     assign ac_and  = d[0] & t[5];    /// AND @ t[5] : ac <- ac & dr;
     assign ac_add  = d[1] & t[5];    /// ADD @ t[5] : ac <- ac + dr;
     assign ac_dr   = d[2] & t[5];    /// LDA @ t[5] : ac <- dr;
+    assign ac_mult = d[8] & t[5];    /// MUL @ t[5] : ac <- ac * dr;
+    assign ac_div  = d[9] & t[5];    /// DIV @ t[5] : ac <- ac / dr;
     assign ac_inpr = pt & ir[11];    /// INP : ac[7:0] <- inpr;
     assign ac_cmp  = rt & ir[9];     /// CMA : ac <- ~ac;
     assign ac_shr  = rt & ir[7];     /// CIR : ac[14:0] <- ac[15:1], ac[15] <- e, e_nxt <- ac[0];
     assign ac_shl  = rt & ir[6];     /// CIL : ac[15:1] <- ac[14:0], ac[0]  <- e, e_nxt <- ac[15];
 
 /// ac_ld : all of above operations
-    assign ac_ld   = ac_and | ac_add | ac_dr | ac_inpr | ac_cmp | ac_shr | ac_shl;
+    assign ac_ld   = ac_and | ac_add | ac_dr | ac_inpr | ac_cmp | ac_shr | ac_shl | ac_mult | ac_div;
     assign ac_inr  = rt & ir[5];     /// INC : ac <- ac + 1;
     assign ac_clr  = rt & ir[11];    /// CLA : ac <- 0;
 	
@@ -204,13 +208,16 @@ module cpu_ex3 (clk, com_ctl, com_addr,
     assign dr_ld   = d[0] & t[4] |  /// AND @ t[4] : dr <- mem[ar];
                      d[1] & t[4] |  /// ADD @ t[4] : dr <- mem[ar];
                      d[2] & t[4] |  /// LDA @ t[4] : dr <- mem[ar];
+                     d[8] & t[4] |  /// MUL @ t[4] : dr <- mem[ar];
+                     d[9] & t[4] |  /// DIV @ t[4] : dr <- mem[ar];
                      d[6] & t[4];   /// ISZ @ t[4] : dr <- mem[ar];
     assign dr_inr  = d[6] & t[5];   /// ISZ @ t[5] : dr <- dr + 1;
     assign dr_clr  = 0;
 
     assign sc_clr  = r & t[2]    |                                            /// end of interrupt cycle
                      d[0] & t[5] | d[1] & t[5] | d[2] & t[5] | d[3] & t[4] |  /// end of AND/ADD/LDA/STA
-                     d[4] & t[4] | d[5] & t[5] | d[6] & t[6] |                /// end of BUN/BSA/ISZ
+                     d[4] & t[4] | d[5] & t[5] | d[6] & t[6] | d[8] & t[5] |
+      		     d[9] & t[5] |		     /// end of BUN/BSA/ISZ
                      rt | pt |                                                /// end of reg-insn/io-insn
                      ~s;                                                      /// halt
 
@@ -231,6 +238,8 @@ module cpu_ex3 (clk, com_ctl, com_addr,
                      ~d[7] & i15 & t[3]   |   /// indirect : ar <- mem[ar];
                      d[0] & t[4]          |   /// AND @ t[4] : dr <- mem[ar];
                      d[1] & t[4]          |   /// ADD @ t[4] : dr <- mem[ar];
+                     d[8] & t[4]          |   /// MUL @ t[4] : dr <- mem[ar];
+                     d[9] & t[4]          |   /// DIV @ t[4] : dr <- mem[ar];
                      d[2] & t[4]          |   /// LDA @ t[4] : dr <- mem[ar];
                      d[6] & t[4];             /// ISZ @ t[4] : dr <- mem[ar];
 
@@ -269,7 +278,7 @@ module cpu_ex3 (clk, com_ctl, com_addr,
 
     assign imsk_nxt = (pt & ir[3]) ? ac[3:0] : imsk;  /// IMK : imsk <- ac[3:0]
 
-    assign seg_nxt = (pt & ir[2]) ? ac : seg;       /// SEG : seg <- ac
+    assign seg_nxt = (pt & ir[2]) ? ac[15:0] : seg;       /// SEG : seg <- ac
 
     assign s_nxt = (rt & ir[0]) ? 0 : s;            /// HLT : s <- 0;
 

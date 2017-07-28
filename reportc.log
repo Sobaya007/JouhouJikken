@@ -1,108 +1,99 @@
-This is e-pTeX, Version 3.14159265-p3.7-160201-2.6 (utf8.sjis) (TeX Live 2016/W32TeX) (preloaded format=platex 2017.4.30)  1 JUL 2017 22:47
+This is e-pTeX, Version 3.14159265-p3.6-141210-2.6 (utf8.euc) (TeX Live 2015/Debian) (preloaded format=platex 2017.4.27)  3 JUL 2017 08:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**./reportc.tex
+**reportc.tex
 (./reportc.tex
-pLaTeX2e <2016/11/29> (based on LaTeX2e <2017/01/01> patch level 3)
-Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
-(c:/texlive/2016/texmf-dist/tex/platex/jsclasses/jsarticle.cls
-Document Class: jsarticle 2017/03/05 okumura, texjporg
-\jsc@mpt=\dimen118
-\jsc@mmm=\dimen119
-\jsc@smallskipamount=\skip41
-LaTeX Info: Redefining \rmfamily on input line 468.
-LaTeX Info: Redefining \sffamily on input line 471.
-LaTeX Info: Redefining \ttfamily on input line 474.
-LaTeX Info: Redefining \textmc on input line 477.
-LaTeX Info: Redefining \textgt on input line 479.
+pLaTeX2e <2006/11/10> (based on LaTeX2e <2016/02/01> patch level 0)
+Babel <3.9n> and hyphenation patterns for 80 languages loaded.
+(/usr/share/texlive/texmf-dist/tex/platex/jsclasses/jsarticle.cls
+Document Class: jsarticle 2014/02/07 okumura
+LaTeX Info: Redefining \rmfamily on input line 352.
+LaTeX Info: Redefining \sffamily on input line 355.
+LaTeX Info: Redefining \ttfamily on input line 358.
 \symmincho=\mathgroup4
 LaTeX Font Info:    Overwriting symbol font `mincho' in version `bold'
-(Font)                  JY1/mc/m/n --> JY1/gt/m/n on input line 540.
+(Font)                  JY1/mc/m/n --> JY1/gt/m/n on input line 423.
 LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
-(Font)              scaled to size 9.60999pt on input line 731.
+(Font)              scaled to size 9.60999pt on input line 613.
 LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
-(Font)              scaled to size 9.60999pt on input line 731.
-\fullwidth=\dimen120
+(Font)              scaled to size 9.60999pt on input line 613.
+\fullwidth=\dimen118
 LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
-(Font)              scaled to size 7.68799pt on input line 883.
+(Font)              scaled to size 7.68799pt on input line 760.
 LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
-(Font)              scaled to size 7.68799pt on input line 883.
-\c@part=\count82
-\c@section=\count83
-\c@subsection=\count84
-\c@subsubsection=\count85
-\c@paragraph=\count86
-\c@subparagraph=\count87
+(Font)              scaled to size 7.68799pt on input line 760.
+\c@part=\count81
+\c@section=\count82
+\c@subsection=\count83
+\c@subsubsection=\count84
+\c@paragraph=\count85
+\c@subparagraph=\count86
 \@abstractbox=\box41
-\c@figure=\count88
-\c@table=\count89
-\abovecaptionskip=\skip42
-\belowcaptionskip=\skip43
-\jsc@tocl@width=\dimen121
-\@lnumwidth=\dimen122
-\bibindent=\dimen123
-(c:/texlive/2016/texmf-dist/tex/platex/jsclasses/jslogo.sty
-Package: jslogo 2017/02/24 okumura, texjporg
-LaTeX Info: Redefining \TeX on input line 94.
-LaTeX Info: Redefining \LaTeX on input line 147.
-LaTeX Info: Redefining \LaTeXe on input line 200.
-)
-\heisei=\count90
-)
-(c:/texlive/2016/texmf-dist/tex/latex/graphics/graphicx.sty
+\c@figure=\count87
+\c@table=\count88
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\js@tocl@width=\dimen119
+\@lnumwidth=\dimen120
+\bibindent=\dimen121
+LaTeX Info: Redefining \TeX on input line 1731.
+LaTeX Info: Redefining \LaTeX on input line 1757.
+LaTeX Info: Redefining \LaTeXe on input line 1782.
+\heisei=\count89
+) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
 
-(c:/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
 \KV@toks@=\toks15
 )
-(c:/texlive/2016/texmf-dist/tex/latex/graphics/graphics.sty
-Package: graphics 2016/10/09 v1.0u Standard LaTeX Graphics (DPC,SPQR)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2016/01/03 v1.0q Standard LaTeX Graphics (DPC,SPQR)
 
-(c:/texlive/2016/texmf-dist/tex/latex/graphics/trig.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
 Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
 )
-(c:/texlive/2016/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
-File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
 )
-Package graphics Info: Driver file: dvips.def on input line 99.
+Package graphics Info: Driver file: dvips.def on input line 95.
 
-(c:/texlive/2016/texmf-dist/tex/latex/graphics-def/dvips.def
-File: dvips.def 2016/07/10 v3.1a Driver-dependent file (DPC,SPQR)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/dvips.def
+File: dvips.def 2015/12/30 v3.0k Driver-dependent file (DPC,SPQR)
 ))
-\Gin@req@height=\dimen124
-\Gin@req@width=\dimen125
+\Gin@req@height=\dimen122
+\Gin@req@width=\dimen123
 )
-(c:/texlive/2016/texmf-dist/tex/latex/listings/listings.sty
-\lst@mode=\count91
+(/usr/share/texlive/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count90
 \lst@gtempboxa=\box42
 \lst@token=\toks16
-\lst@length=\count92
-\lst@currlwidth=\dimen126
-\lst@column=\count93
-\lst@pos=\count94
-\lst@lostspace=\dimen127
-\lst@width=\dimen128
-\lst@newlines=\count95
-\lst@lineno=\count96
-\lst@maxwidth=\dimen129
+\lst@length=\count91
+\lst@currlwidth=\dimen124
+\lst@column=\count92
+\lst@pos=\count93
+\lst@lostspace=\dimen125
+\lst@width=\dimen126
+\lst@newlines=\count94
+\lst@lineno=\count95
+\lst@maxwidth=\dimen127
 
-(c:/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty
+(/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
-\c@lstnumber=\count97
-\lst@skipnumbers=\count98
+\c@lstnumber=\count96
+\lst@skipnumbers=\count97
 \lst@framebox=\box43
 )
-(c:/texlive/2016/texmf-dist/tex/latex/listings/listings.cfg
+(/usr/share/texlive/texmf-dist/tex/latex/listings/listings.cfg
 File: listings.cfg 2015/06/04 1.6 listings configuration
 ))
 Package: listings 2015/06/04 1.6 (Carsten Heinz)
 
-(c:/texlive/2016/texmf-dist/tex/latex/listings/lstlang1.sty
+(/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(c:/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty
+(/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
 ) (./reportc.aux)
 \openout1 = `reportc.aux'.
@@ -123,7 +114,7 @@ LaTeX Font Info:    Checking defaults for JY1/mc/m/n on input line 18.
 LaTeX Font Info:    ... okay on input line 18.
 LaTeX Font Info:    Checking defaults for JT1/mc/m/n on input line 18.
 LaTeX Font Info:    ... okay on input line 18.
-\c@lstlisting=\count99
+\c@lstlisting=\count98
 LaTeX Font Info:    Font shape `JT1/mc/m/n' will be
 (Font)              scaled to size 16.60605pt on input line 19.
 LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
@@ -186,7 +177,7 @@ Overfull \hbox (1.07368pt too wide) in paragraph at lines 59--60
 
 
 Overfull \hbox (2.2222pt too wide) in paragraph at lines 51--63
-[][]$[]$[] []$[]$[] 
+[]$[]$ $[]$ 
  []
 
 File: FFout.png Graphic file (type eps)
@@ -203,7 +194,7 @@ Overfull \hbox (1.07368pt too wide) in paragraph at lines 74--75
 
 
 Overfull \hbox (2.2222pt too wide) in paragraph at lines 66--78
-[][]$[]$[] []$[]$[] 
+[]$[]$ $[]$ 
  []
 
 [2] (./report1_4_nakata_verilog3.asm
@@ -217,14 +208,14 @@ LaTeX Font Info:    Font shape `JY1/gt/m/n' will be
 (Font)              scaled to size 7.68799pt on input line 2.
 LaTeX Font Info:    Try loading font information for OML+cmr on input line 7.
 
-(c:/texlive/2016/texmf-dist/tex/latex/base/omlcmr.fd
+(/usr/share/texlive/texmf-dist/tex/latex/base/omlcmr.fd
 File: omlcmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <8> not available
 (Font)              Font shape `OML/cmm/m/it' tried instead on input line 7.
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 9.
 
-(c:/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
@@ -237,50 +228,58 @@ LaTeX Font Info:    Font shape `JY1/mc/m/it' in size <8> not available
 (Font)              Font shape `JY1/mc/m/n' tried instead on input line 23.
 LaTeX Font Info:    Font shape `JY1/mc/m/n' will be
 (Font)              scaled to size 7.68799pt on input line 23.
- [3] [4] [5] [6] [7]
-[8] [9]) [10]
+ [3] [4] [5] [6]
+[7] [8] [9]) [10]
 File: 1+1.png Graphic file (type eps)
  <1+1.png>
-Overfull \hbox (1.07368pt too wide) in paragraph at lines 99--100
+Overfull \hbox (1.07368pt too wide) in paragraph at lines 110--111
  [] 
  []
 
 File: 3-1.png Graphic file (type eps)
 <3-1.png>
-Overfull \hbox (1.07368pt too wide) in paragraph at lines 105--106
+Overfull \hbox (1.07368pt too wide) in paragraph at lines 116--117
  [] 
  []
 
 
-Overfull \hbox (2.2222pt too wide) in paragraph at lines 97--109
-[][]$[]$[] []$[]$[] 
+Overfull \hbox (2.2222pt too wide) in paragraph at lines 108--120
+[]$[]$ $[]$ 
  []
 
 File: FF+FF.png Graphic file (type eps)
 <FF+FF.png>
-Overfull \hbox (1.07368pt too wide) in paragraph at lines 114--115
+Overfull \hbox (1.07368pt too wide) in paragraph at lines 125--126
  [] 
  []
 
 File: FFFF-FF.png Graphic file (type eps)
 <FFFF-FF.png>
-Overfull \hbox (1.07368pt too wide) in paragraph at lines 120--121
+Overfull \hbox (1.07368pt too wide) in paragraph at lines 131--132
  [] 
  []
 
 
-Overfull \hbox (2.2222pt too wide) in paragraph at lines 112--124
-[][]$[]$[] []$[]$[] 
+Overfull \hbox (2.2222pt too wide) in paragraph at lines 123--135
+[]$[]$ $[]$ 
  []
 
-[11] (./reportc.aux) ) 
+[11]
+Overfull \hbox (56.91457pt too wide) in paragraph at lines 156--157
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][][][][][] 
+ []
+
+LaTeX Font Info:    Font shape `OML/cmr/m/it' in size <8> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 158.
+[12] (./reportc.aux) ) 
 Here is how much of TeX's memory you used:
- 2568 strings out of 493683
- 32904 string characters out of 6152642
- 173531 words of memory out of 5000000
- 6144 multiletter control sequences out of 15000+600000
+ 2618 strings out of 493723
+ 33125 string characters out of 6152570
+ 171033 words of memory out of 5000000
+ 6171 multiletter control sequences out of 15000+600000
  15809 words of font info for 71 fonts, out of 8000000 for 9000
  934 hyphenation exceptions out of 8191
- 30i,9n,49p,208b,1654s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 30i,9n,49p,241b,1652s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on reportc.dvi (11 pages, 64160 bytes).
+Output written on reportc.dvi (12 pages, 75664 bytes).

@@ -9,7 +9,7 @@ module fpga_ex3
     KEY,                            //  Pushbutton[3:0]
     ////////////////////	DPDT Switch		////////////////////
     SW,                             //  Toggle Switch[9:0]
-    ////////////////////	7-SEG Display	////////////////////
+   ////////////////////	7-SEG Display	////////////////////
     HEX0,                           //  Seven Segment Digit 0
     HEX1,                           //  Seven Segment Digit 1
     HEX2,                           //  Seven Segment Digit 2
@@ -65,7 +65,10 @@ module fpga_ex3
     wire    [7:0]   inpr, outr, sin_byte, pin_byte;
     wire            sout_rdy, sin_error, sin_rdy, pout_bsy, pin_bsy;
     wire    [1:0]   fgi, fgi_bsy, fgo, fgo_bsy;
-    wire    [15:0]  bus, mem, dr, ac, ir, seg;
+    wire    [31:0]  bus, mem;
+    wire    [19:0]  ir;
+    wire    [31:0]  dr, ac;
+    wire    [15:0]  seg;
     wire    [11:0]  ar, pc;
     wire    [2:0]   sc;
     wire            s, r, e, ien, sc_clr, iot;
@@ -85,6 +88,7 @@ GPIO_0[35:18] = GP_OUT[17:0]  -----> GPIO_0[35:18] = GP_IN [17:0]
 ----------------------------            ----------------------------
 GP_IN [7:0]   = pin_byte      <----- GP_OUT[7:0]   = outr[7:0]
 GP_IN [8]     = pin_bsy       <----- GP_OUT[8]     = fgo[0]
+GP_OUT[9]     = fgi[0]        -----> GP_IN [9]     = pout_bsy
 GP_OUT[9]     = fgi[0]        -----> GP_IN [9]     = pout_bsy
 
 GP_OUT[7:0]   = outr[7:0]     -----> GP_IN [7:0]   = pin_byte
@@ -128,14 +132,14 @@ GP_IN [9]     = pout_bsy      <----- GP_OUT[9]     = fgi[0]
     assign halted = (s == 1'b0);
     assign GPIO_1 = {1'b0, s, ien, r, sc_clr, sc, pc, ir};
 
-    assign sys_probe_data[15:0] = (sp[0])  ? ac :
+    assign sys_probe_data[15:0] = (sp[0])  ? ac[15:0] :
                                   (sp[1])  ? {15'b0, e} :
                                   (sp[2])  ? {4'b0, pc} :
-                                  (sp[3])  ? ir :
+                                  (sp[3])  ? ir[15:0] :
                                   (sp[4])  ? {4'b0, ar} :
-                                  (sp[5])  ? dr :
-                                  (sp[6])  ? mem :
-                                  (sp[7])  ? bus :
+                                  (sp[5])  ? dr[15:0] :
+                                  (sp[6])  ? mem[15:0] :
+                                  (sp[7])  ? bus[15:0] :
                                   (sp[8])  ? {13'b0, sc} :
                                   (sp[9])  ? {10'b0, ien, imsk, iot} :
                                   (sp[10]) ? {4'b0, fgi_bsy, fgi, inpr} :

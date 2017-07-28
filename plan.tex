@@ -1,0 +1,79 @@
+\documentclass{jsarticle}
+\usepackage{graphicx,listings}
+\lstset{language={C},%
+  basicstyle=\footnotesize,%
+  commentstyle=\textit,%
+  classoffset=1,%
+  keywordstyle=\bfseries,%
+  frame=tRBl,framesep=5pt,%
+  showstringspaces=false,%
+  numbers=left,stepnumber=1,numberstyle=\footnotesize%
+}%
+
+
+\title{情報実験第三 実験計画書}
+
+\author{情報工学科15\_03602 柿沼 建太郎 \\ 情報工学科 15\_10588 中田 光}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section*{概要}
+担当者は15班の柿沼・中田の2名である。
+今回の実験では本班はtest\_calc1.asmの改良を目標とする。
+なお、課題1-Cで行った7セグメントディスプレイへの表示は行わない。
+
+\section*{追加/変更する機能}
+\subsection*{Verilogコードの追加/変更}
+\begin{itemize}
+    \item 16bitCPUを32bitCPUに変える
+    \item オペコードを1bit増やし、命令数を増やす
+    \item ex3の命令に乗算/除算を実装
+    \item 固定小数を実装
+    \item メモリ参照命令を追加(減算,乗算,除算,剰余)
+\end{itemize}
+\subsection*{EX3コードの追加/変更}
+\begin{itemize}
+    \item 小数の入力受付
+    \item 表示の10進化
+    \item 乗算,除算,剰余,平方根などの新たな演算の実装
+\end{itemize}
+
+\section*{担当者}
+各タスクと担当者を表として以下に示す。
+\begin{table}[h]
+\begin{tabular}{|l|c|c|} \hline
+タスク/名前 & 柿沼 & 中田 \\ \hline \hline
+Verilogコード変更 &  & $\circ$ \\ \hline
+EX3コード変更 & $\circ$ & \\ \hline
+\end{tabular}
+\end{table}
+
+\section*{スケジュール}
+\subsection*{Verilog}
+\begin{table}[h]
+\begin{tabular}{|l|c|c|} \hline
+    日付 & 概要 \\ \hline \hline
+7/7 & CPUの32bit化 \\ \hline
+7/10 & 命令セットの変更 \\ \hline
+7/14 & 命令セットの変更 \\ \hline
+7/21 & 固定小数の実装 \\ \hline
+7/24 & 固定小数の実装 \\ \hline
+7/28 & 予備日 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection*{EX3}
+\begin{table}[h]
+\begin{tabular}{|l|c|c|} \hline
+    日付 & 概要 \\ \hline \hline
+7/7 & 表示を10進に直す \\ \hline
+7/10 & 小数の入力受付 \\ \hline
+7/14 & 小数の入力受付 \\ \hline
+7/21 & 各種演算の実装 \\ \hline
+7/24 & 各種演算の実装 \\ \hline
+7/28 & 予備日 \\ \hline
+\end{tabular}
+\end{table}
+
+\end{document}
